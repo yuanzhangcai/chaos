@@ -1,0 +1,25 @@
+#通用配置文件
+[common]
+app_desc = "chaos"
+address = "0.0.0.0:4444" # gin web服务启动地址
+used_time = true # 是否启用耗时中间件，该中间件会记录请求耗时，请求参数，返回内容等信息，比较消耗性能，如果对性能要求较高的话，可以设为false
+server_name = "chaos.zacyuan.com" # 微服务名称
+etcd_addrs= ["127.0.0.1:2379"] # etcd地址
+register_interval = 15 # 服务注册间隔时间
+register_ttl = 30 # 服务失效时间
+
+[log] # 日志相关配置
+filedir = "/data/tds/logs/chaos/" #日志文件路径
+maxdays = 15 # 日志最大保留天数
+level = 4 # 日志保存的时候的级别，默认是 Info 级别
+report_caller = true # 日志中是否输出调用函数所在文件名，行号信息
+
+[monitor]
+server = ":4446" # prometheus曝露监控数据接口
+namespace = "chaos"
+subsystem = "v1"
+
+[robot]
+server= ""
+prefix="【Chaos】"
+

@@ -1,0 +1,12 @@
+# 正式环境下专用的配置文件
+[common]
+etcd_addrs= [] # etcd地址
+
+[db]
+list = ["db1"]
+db1 = "zacyuan:zacyuan@(mysql:3306)/tds_user_pre?parseTime=true&loc=Local&charset=utf8"
+write_log = false # 数据库操作是否写日志。正式环境默认不写日志
+
+[redis]
+server = "redis:6379"
+password = "12345678"

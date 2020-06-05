@@ -1,0 +1,69 @@
+image: golang:latest
+
+variables:
+  REPO_NAME: github.com/yuanzhangcai/chaos
+
+before_script:
+  - echo $CI_PROJECT_DIR
+  - export GOPATH=/home/gitlab-runner
+  - export PATH=$PATH:/usr/local/go/bin
+
+stages:
+  - lint
+  - test
+  - sonar
+
+vet:
+  stage: lint
+  script:
+    - go vet -n ./... 2> vet
+  artifacts:
+    paths:
+      - vet
+
+golangci-lint:
+  stage: lint
+  script:
+    - golangci-lint run ./... --out-format=checkstyle > golangci-lint-report.xml || true
+  artifacts:
+    paths:
+      - golangci-lint-report.xml
+  allow_failure: true
+
+go-test:
+  stage: test
+  script:
+    - go test -race -cover ./... -coverprofile=./coverage.data
+    - go tool cover -func=./coverage.data -o ./total.txt
+    - cat ./total.txt | grep 'total'
+    - go test -race -cover -v  ./... -json -coverprofile=covprofile > test.json
+  artifacts:
+    paths:
+      - covprofile
+
+sonar_analyze:
+  stage: sonar
+  only:
+    refs:
+      - master
+  script:
+    - wget -q http://127.0.0.1:8000/sonar-scanner.tar.gz
+    - tar -xf sonar-scanner.tar.gz
+    - "./sonar-scanner/bin/sonar-scanner \
+      -Dsonar.host.url=http://127.0.0.1:9000 \
+      -Dsonar.sources=. \
+      -Dsonar.projectKey=$CI_PROJECT_NAME \
+      -Dsonar.login=43ecad3bfecb048728c7459347d8a470a620391f \
+      -Dsonar.tests=. \
+      -Dsonar.exclusions=**/*_test.go,**/vendor/**,**/testdata/** \
+      -Dsonar.go.tests.reportPaths=test.json \
+      -Dsonar.go.coverage.reportPaths=covprofile \
+      -Dsonar.go.govet.reportPaths=vet \
+      -Dsonar.go.golangci-lint.reportPaths=golangci-lint-report.xml \
+      -Dsonar.test.inclusions=**/*_test.go \
+      -Dsonar.test.exclusions=**/vendor/**"
+  dependencies:
+    - vet
+    - golangci-lint
+    - go-test
+

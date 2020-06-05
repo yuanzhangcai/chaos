@@ -1,0 +1,23 @@
+# 本地开发环境下专用的配置文件
+[common]
+etcd_addrs= ["127.0.0.1:2379"] # etcd地址
+
+[db]
+server = "zacyuan:zacyuan@(mysql:3306)/tds_user_pre?parseTime=true&loc=Local&charset=utf8"
+write_log = true # 数据库操作是否写日志。
+
+[redis]
+server = "redis:6379"
+password = "12345678"
+
+[log] # 日志相关配置
+level = 5 #日志保存的时候的级别，默认是 Debug 级别
+
+[pprof]
+server= ":44444"
+
+[qual]
+use_cache = false
+
+[robot]
+server = ""
