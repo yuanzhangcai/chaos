@@ -20,6 +20,5 @@ namespace = "chaos"
 subsystem = "v1"
 
 [robot]
-server= ""
-prefix="【Chaos】"
+server = "http://10.10.40.49:4400/fakesvr/cgi/send_robot"
 

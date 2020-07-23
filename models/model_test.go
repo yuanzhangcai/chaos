@@ -2,16 +2,16 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/micro/go-micro/v2/config"
-	"github.com/micro/go-micro/v2/config/source/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/tools"
+	"github.com/yuanzhangcai/config"
 )
 
 var (
@@ -27,11 +27,12 @@ func init() {
 func initConfig() {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	common.Env = common.EnvTest
 	common.LoadConfig()
+	fmt.Println("aa", config.GetStringArray("db", "list"))
 
 	str := `
 	{
@@ -41,13 +42,8 @@ func initConfig() {
 			"write_log" : true
 		}
 	}`
-
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
-
+	_ = config.LoadMemory(str, "json")
+	fmt.Println("bb", config.GetStringArray("db", "list"))
 	// 初始化Redis
 	_ = tools.InitRedis(server, password, prefix)
 }
@@ -60,12 +56,8 @@ func TestInit(t *testing.T) {
 			"bb" : ""
 		}
 	}`
+	_ = config.LoadMemory(str, "json")
 
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
 	err := Init()
 	assert.NotNil(t, err)
 
@@ -76,12 +68,7 @@ func TestInit(t *testing.T) {
 			"db1" : "www"
 		}
 	}`
-
-	s = memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	_ = config.LoadMemory(str, "json")
 	err = Init()
 	assert.NotNil(t, err)
 
@@ -91,12 +78,7 @@ func TestInit(t *testing.T) {
 			"list" : []
 		}
 	}`
-
-	s = memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	_ = config.LoadMemory(str, "json")
 	err = Init()
 	assert.NotNil(t, err)
 

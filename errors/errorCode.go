@@ -8,7 +8,11 @@ type Error struct {
 }
 
 func (c *Error) Error() string {
-	return c.Msg
+	msg := c.Msg
+	if c.Err != nil {
+		msg += c.Err.Error()
+	}
+	return msg
 }
 
 // SetErr 设置错误信息

@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/micro/go-micro/v2/config"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/controllers"
 	"github.com/yuanzhangcai/chaos/middleware"
 	"github.com/yuanzhangcai/chaos/monitor"
 	"github.com/yuanzhangcai/chaos/tools"
+	"github.com/yuanzhangcai/config"
 )
 
 var register *tools.ServicesRegister
@@ -25,11 +25,16 @@ var quit chan os.Signal
 
 // CreateServer 创建路由
 func CreateServer() *gin.Engine {
+	if common.Env == common.EnvProd {
+		// 正式环境时，将gin的模式，设置成ReleaseMode
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.New()
 
 	// 添加中间件
 	var ware []gin.HandlerFunc
-	if config.Get("common", "used_time").Bool(false) {
+	if config.GetBool("common", "used_time") {
 		ware = append(ware, middleware.UsedTime())
 	}
 	ware = append(ware, gin.Recovery())
@@ -192,12 +197,12 @@ func initialize(c interface{}) controllers.ControllerInterface {
 
 // StartGin 开启gin服务
 func StartGin(router *gin.Engine, srv *http.Server) {
-	serverName := config.Get("common", "server_name").String("chaos.papegames.com") // 微务服名称
+	serverName := config.GetString("common", "server_name") // 微务服名称
 	if common.Env != common.EnvProd {
 		serverName += "." + common.Env // 如果当前环境不是正式环境，服务名称添加环境后缀
 	}
 
-	srv.Addr = config.Get("common", "address").String("")
+	srv.Addr = config.GetString("common", "address")
 	srv.Handler = router
 
 	go func() {
@@ -208,14 +213,14 @@ func StartGin(router *gin.Engine, srv *http.Server) {
 		}
 	}()
 
-	etcdAddrs := config.Get("common", "etcd_addrs").StringSlice([]string{})
+	etcdAddrs := config.GetStringArray("common", "etcd_addrs")
 	if len(etcdAddrs) > 0 { // 配有etcd地址，则开启服务注册功能
 		register = tools.NewServicesRegister(&tools.RegisterOptions{
 			ServerName:    serverName,
-			EtcdAddress:   config.Get("common", "etcd_addrs").StringSlice([]string{}),
+			EtcdAddress:   config.GetStringArray("common", "etcd_addrs"),
 			ServerAddress: srv.Addr,
-			Interval:      time.Duration(config.Get("common", "register_interval").Int(15)) * time.Second,
-			TTL:           time.Duration(config.Get("common", "register_ttl").Int(30)) * time.Second,
+			Interval:      time.Duration(config.GetInt("common", "register_interval")) * time.Second,
+			TTL:           time.Duration(config.GetInt("common", "register_ttl")) * time.Second,
 		})
 
 		err := register.Start()
@@ -229,11 +234,6 @@ func StartGin(router *gin.Engine, srv *http.Server) {
 
 // StartServer 启动服务
 func StartServer(router *gin.Engine) {
-	if common.Env == common.EnvProd {
-		// 正式环境时，将gin的模式，设置成ReleaseMode
-		gin.SetMode(gin.ReleaseMode)
-	}
-
 	quit = make(chan os.Signal, 1)
 	srv := &http.Server{}
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)

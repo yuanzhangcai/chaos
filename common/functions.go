@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,9 +19,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/micro/go-micro/v2/config"
 	"github.com/patrickmn/go-cache"
 	"github.com/sirupsen/logrus"
+	"github.com/yuanzhangcai/config"
 )
 
 var (
@@ -266,48 +264,6 @@ func GeneratePigeonSig(secret string) (string, string) {
 	return currTime, sig
 }
 
-// CheckLogin 检查和户是否登录
-func CheckLogin(nid, token string) (bool, error) {
-	clientID := config.Get("client_login", "id").String("")
-	secret := config.Get("client_login", "secret").String("")
-	currTime, sig := GeneratePigeonSig(secret)
-	sURL := config.Get("client_login", "verify_url").String("")
-
-	params := url.Values{}
-	params.Set("clientid", clientID)
-	params.Set("sig", sig)
-	params.Set("timestamp", currTime)
-	params.Set("nid", nid)
-	params.Set("token", token)
-	sURL += "?" + params.Encode()
-	body, status, err := GetHTTP(sURL)
-
-	if err != nil {
-		return false, err
-	}
-
-	if status != 200 {
-		return false, fmt.Errorf("Http返回状态码是[%d]。", status)
-	}
-
-	result := struct {
-		Ret    int64 `json:"ret"`
-		Time   int64 `json:"time"`
-		PlatID int64 `json:"platid"`
-	}{}
-
-	err = json.Unmarshal([]byte(body), &result)
-	if err != nil {
-		return false, err
-	}
-
-	if result.Ret != 0 {
-		return false, nil
-	}
-
-	return true, nil
-}
-
 // CheckFlowAccessLimitLocal 流程访问频率控制
 func CheckFlowAccessLimitLocal(nid, actID, flowID string, second, limit int64) bool {
 	if second == 0 || limit == 0 {
@@ -419,15 +375,15 @@ func LoadConfig() {
 // ShowInfo 显示程序信息
 func ShowInfo() {
 	fmt.Println("=======================================================================")
-	fmt.Println("     Service   : " + config.Get("common", "app_desc").String(""))
+	fmt.Println("     Service   : " + config.GetString("common", "app_desc"))
 	fmt.Println("     Version   : " + Version)
 	fmt.Println("     Env       : " + Env)
 	fmt.Println("     Commit    : " + Commit)
 	fmt.Println("     BuildTime : " + BuildTime)
 	fmt.Println("     BuildUser : " + BuildUser)
 	fmt.Println("     GoVersion : " + GoVersion)
-	fmt.Println("     Address   : " + config.Get("common", "address").String(""))
-	fmt.Println("     PProf     : " + config.Get("pprof", "server").String(""))
-	fmt.Println("     Metrics   : " + config.Get("monitor", "server").String(""))
+	fmt.Println("     Address   : " + config.GetString("common", "address"))
+	fmt.Println("     PProf     : " + config.GetString("pprof", "server"))
+	fmt.Println("     Metrics   : " + config.GetString("monitor", "server"))
 	fmt.Println("=======================================================================")
 }

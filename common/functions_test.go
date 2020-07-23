@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/micro/go-micro/v2/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/yuanzhangcai/config"
 )
 
-// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如export CI_PROJECT_DIR=/Users/zacyuan/MyWork/tds/chaos
+// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如export CI_PROJECT_DIR=/Users/zacyuan/MyWork/chaos
 
 func TestInit(t *testing.T) {
 	assert.NotNil(t, localCache)
@@ -238,28 +238,6 @@ func TestGeneratePigeonSig(t *testing.T) {
 	assert.Equal(t, sig, sig2)
 }
 
-// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如：export CI_PROJECT_DIR=/Users/zacyuan/MyWork/tds/chaos
-func TestCheckLogin(t *testing.T) {
-	CurrRunPath = os.Getenv("CI_PROJECT_DIR")
-	if CurrRunPath == "" {
-		CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
-	}
-	Env = "test"
-
-	LoadConfig()
-
-	nid := "1707357"
-	token := "f638a747f03a984fb4d374c59322ce59b8e50391"
-	hasLogin, err := CheckLogin(nid, token)
-	assert.Nil(t, err)
-	assert.True(t, hasLogin)
-
-	token = "b155d45e1666b89a3391f3b171687402ecbf4999"
-	hasLogin, err = CheckLogin(nid, token)
-	assert.Nil(t, err)
-	assert.False(t, hasLogin)
-}
-
 func TestCheckFlowAccessLimitLocal(t *testing.T) {
 	nid := "1707357"
 	actID := "1"
@@ -294,7 +272,7 @@ func TestGetIntranetIP(t *testing.T) {
 func TestGetEnv(t *testing.T) {
 	CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if CurrRunPath == "" {
-		CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	_ = ioutil.WriteFile(CurrRunPath+"/config/env", []byte("pre"), 0755)
@@ -308,7 +286,7 @@ func TestGetEnv(t *testing.T) {
 func TestLoadConfig(t *testing.T) {
 	CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if CurrRunPath == "" {
-		CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	Env = "test"
@@ -317,8 +295,8 @@ func TestLoadConfig(t *testing.T) {
 	Env = "bb"
 	LoadConfig()
 
-	tmp := config.Get("common", "server_name").String("")
-	assert.Equal(t, "chaos.papegames.com", tmp)
+	tmp := config.GetString("common", "server_name")
+	assert.Equal(t, "chaos.zacyuan.com", tmp)
 }
 
 func TestShowInfo(t *testing.T) {

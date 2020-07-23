@@ -9,33 +9,33 @@ import (
 	"testing"
 	"time"
 
-	"github.com/micro/go-micro/v2/config"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuanzhangcai/chaos/common"
+	"github.com/yuanzhangcai/config"
 )
 
-// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如：export CI_PROJECT_DIR=/Users/zacyuan/MyWork/tds/chaos
+// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如：export CI_PROJECT_DIR=/Users/zacyuan/MyWork/chaos
 func TestGetLogOptionFormConfig(t *testing.T) {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 	common.Env = "test"
 	common.LoadConfig()
 
 	opt, err := GetLogOptionFormConfig()
 	assert.Nil(t, err)
-	assert.Equal(t, config.Get("log", "filedir").String(""), opt.Dir)
-	assert.Equal(t, uint32(config.Get("log", "level").Int(0)), opt.Level)
-	assert.Equal(t, config.Get("log", "report_caller").Bool(false), opt.ReportCaller)
-	assert.Equal(t, int64(config.Get("log", "maxdays").Int(0)), opt.MaxDays)
+	assert.Equal(t, config.GetString("log", "filedir"), opt.Dir)
+	assert.Equal(t, uint32(config.GetInt("log", "level")), opt.Level)
+	assert.Equal(t, config.GetBool("log", "report_caller"), opt.ReportCaller)
+	assert.Equal(t, int64(config.GetInt64("log", "maxdays")), opt.MaxDays)
 }
 
 func TestSendRobotTxtMsg(t *testing.T) {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/cosmos"
 	}
 	common.Env = "test"
 	common.LoadConfig()
@@ -47,14 +47,14 @@ func TestSendRobotTxtMsg(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如：export CI_PROJECT_DIR=/Users/zacyuan/MyWork/tds/chaos
+// 自己测试时需要设置环境变量CI_PROJECT_DIR=代码路径，如：export CI_PROJECT_DIR=/Users/zacyuan/MyWork/chaos
 func TestInitLogrus(t *testing.T) {
 
 	_ = InitLogrus(nil)
 
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 	common.Env = "test"
 	common.LoadConfig()
@@ -109,7 +109,7 @@ func TestSetLogFile(t *testing.T) {
 func TestClearHistoryLog(t *testing.T) {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	opt := Option{
@@ -145,9 +145,9 @@ func TestClearHistoryLog(t *testing.T) {
 
 func TestCallerPrettyfier(t *testing.T) {
 	caller := runtime.Frame{
-		File:     "/Users/zacyuan/MyWork/tds/chaos/main.go",
+		File:     "/Users/zacyuan/MyWork/chaos/main.go",
 		Line:     34,
-		Function: "/Users/zacyuan/MyWork/tds/chaos/main.go/main",
+		Function: "/Users/zacyuan/MyWork/chaos/main.go/main",
 	}
 	function, file := callerPrettyfier(&caller)
 	assert.Equal(t, "main", function)

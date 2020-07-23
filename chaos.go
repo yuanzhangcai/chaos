@@ -6,9 +6,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/gin-gonic/gin"
-
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/micro/go-micro/v2/config"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/log"
@@ -16,6 +14,7 @@ import (
 	"github.com/yuanzhangcai/chaos/monitor"
 	"github.com/yuanzhangcai/chaos/services"
 	"github.com/yuanzhangcai/chaos/tools"
+	"github.com/yuanzhangcai/config"
 )
 
 func init() {
@@ -41,9 +40,9 @@ func init() {
 	monitor.Init()
 
 	// 初始化Redis
-	if err = tools.InitRedis(config.Get("redis", "server").String(""),
-		config.Get("redis", "password").String(""),
-		config.Get("redis", "prefix").String("")); err != nil {
+	if err = tools.InitRedis(config.GetString("redis", "server"),
+		config.GetString("redis", "password"),
+		config.GetString("redis", "prefix")); err != nil {
 		logrus.Fatal(err)
 	}
 
@@ -55,7 +54,7 @@ func init() {
 
 // Start 启动服务
 func Start(setRouter func(*gin.Engine)) {
-	pprof := config.Get("pprof", "server").String("")
+	pprof := config.GetString("pprof", "server")
 	fmt.Println("pprof =", pprof)
 	if pprof != "" {
 		go func() {

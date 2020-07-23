@@ -5,16 +5,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/micro/go-micro/v2/config"
-	"github.com/micro/go-micro/v2/config/source/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuanzhangcai/chaos/common"
+	"github.com/yuanzhangcai/config"
 )
 
 func initConfig() {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	common.Env = "test"
@@ -27,11 +26,7 @@ func initConfig() {
 		}
 	}`
 
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	_ = config.LoadMemory(str, "json")
 }
 
 func init() {

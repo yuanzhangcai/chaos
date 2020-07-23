@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/micro/go-micro/v2/config"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
+	"github.com/yuanzhangcai/config"
 )
 
 var (
@@ -50,7 +50,7 @@ func ConnectDB(node string) error {
 		delete(dbMap, node)
 	}
 
-	dbInfo := config.Get("db", node).String("")
+	dbInfo := config.GetString("db", node)
 	if dbInfo == "" {
 		return fmt.Errorf("没有获取到数据库配置")
 	}
@@ -65,7 +65,7 @@ func ConnectDB(node string) error {
 	// 取消DB复数
 	db.SingularTable(true)
 
-	if config.Get("db", "write_log").Bool(false) {
+	if config.GetBool("db", "write_log") {
 		// 设置sql语句输出到日志文件中
 		db.LogMode(true)
 		logger := &dbLogger{}
@@ -79,7 +79,7 @@ func ConnectDB(node string) error {
 // Init 初始化顾
 func Init() error {
 	var err error
-	list := config.Get("db", "list").StringSlice([]string{})
+	list := config.GetStringArray("db", "list")
 	if len(list) == 0 {
 		return fmt.Errorf("没有获取到数据库配置")
 	}

@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/micro/go-micro/v2/config"
-	"github.com/micro/go-micro/v2/config/source/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/controllers"
 	"github.com/yuanzhangcai/chaos/monitor"
+	"github.com/yuanzhangcai/config"
 )
 
 type header struct {
@@ -38,7 +37,7 @@ func (c *prepareCtl) Test() {
 func initConfig() {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	common.Env = "test"
@@ -51,11 +50,7 @@ func initConfig() {
 		}
 	}`
 
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	_ = config.LoadMemory(str, "json")
 
 	monitor.SetMetrics()
 }
@@ -172,7 +167,7 @@ func TestStart(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 
-	result, code, err := common.GetHTTP("http://127.0.0.1:4004/version")
+	result, code, err := common.GetHTTP("http://127.0.0.1:4444/version")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,7 +178,7 @@ func TestStart(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	_, _, err = common.GetHTTP("http://127.0.0.1:4004/version")
+	_, _, err = common.GetHTTP("http://127.0.0.1:4444/version")
 	assert.NotEqual(t, nil, err)
 
 	str := `
@@ -193,11 +188,7 @@ func TestStart(t *testing.T) {
 		}
 	}`
 
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	_ = config.LoadMemory(str, "json")
 
 	Start(func(router *gin.Engine) {})
 }

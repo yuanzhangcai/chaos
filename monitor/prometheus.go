@@ -6,16 +6,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/micro/go-micro/v2/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/tools"
+	"github.com/yuanzhangcai/config"
 )
 
 var (
+	// Namespace 全局命名空间
 	Namespace string
+	// Subsystem 子系统
 	Subsystem string
 )
 
@@ -92,9 +94,8 @@ func SetMetrics() {
 
 // Init 初始化prometheus监控
 func Init() {
-
-	Namespace = config.Get("monitor", "namespace").String("chaos")
-	Subsystem = config.Get("monitor", "subsystem").String("sub")
+	Namespace = config.GetString("monitor", "namespace")
+	Subsystem = config.GetString("monitor", "subsystem")
 
 	if srv != nil {
 		return
@@ -103,7 +104,7 @@ func Init() {
 	// 设置监控指标
 	SetMetrics()
 
-	addr := config.Get("monitor", "server").String("")
+	addr := config.GetString("monitor", "server")
 	if addr != "" { // 开启prometheus监控
 		mux := http.NewServeMux()
 		mux.Handle("/metrics", promhttp.Handler())
@@ -119,9 +120,9 @@ func Init() {
 			}
 		}()
 
-		etcdAddrs := config.Get("common", "etcd_addrs").StringSlice([]string{})
+		etcdAddrs := config.GetStringArray("common", "etcd_addrs")
 		if len(etcdAddrs) > 0 {
-			serverName := config.Get("common", "server_name").String("chaos.papegames.com") // 微务服名称
+			serverName := config.GetString("common", "server_name") // 微务服名称
 			if common.Env != common.EnvProd {
 				serverName += "." + common.Env // 如果当前环境不是正式环境，服务名称添加环境后缀
 			}
@@ -129,10 +130,10 @@ func Init() {
 
 			register = tools.NewServicesRegister(&tools.RegisterOptions{
 				ServerName:    serverName,
-				EtcdAddress:   config.Get("common", "etcd_addrs").StringSlice([]string{}),
+				EtcdAddress:   config.GetStringArray("common", "etcd_addrs"),
 				ServerAddress: addr,
-				Interval:      time.Duration(config.Get("common", "register_interval").Int(15)) * time.Second,
-				TTL:           time.Duration(config.Get("common", "register_ttl").Int(30)) * time.Second,
+				Interval:      time.Duration(config.GetInt("common", "register_interval")) * time.Second,
+				TTL:           time.Duration(config.GetInt("common", "register_ttl")) * time.Second,
 			})
 
 			_ = register.Start()

@@ -8,35 +8,22 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/micro/go-micro/v2/config"
-	"github.com/micro/go-micro/v2/config/source/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/chaos/log"
 	"github.com/yuanzhangcai/chaos/monitor"
+	"github.com/yuanzhangcai/config"
 )
 
 func initConfig() {
 	common.CurrRunPath = os.Getenv("CI_PROJECT_DIR")
 	if common.CurrRunPath == "" {
-		common.CurrRunPath = "/Users/zacyuan/MyWork/tds/chaos"
+		common.CurrRunPath = "/Users/zacyuan/MyWork/chaos"
 	}
 
 	common.Env = "test"
 	common.LoadConfig()
-
-	str := `
-	{
-		"common" : {
-			"etcd_addrs" : ["47.99.79.44:2379", "47.111.108.59:2379", "47.99.62.229:2379"]
-		}
-	}`
-
-	s := memory.NewSource(
-		memory.WithJSON([]byte(str)),
-	)
-
-	_ = config.Load(s)
+	config.SetPath([]string{"common", "etcd_addrs"}, []string{"47.99.79.44:2379", "47.111.108.59:2379", "47.99.62.229:2379"})
 
 	monitor.SetMetrics()
 }

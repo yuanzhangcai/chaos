@@ -13,10 +13,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/micro/go-micro/v2/config"
 	cron "github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
+	"github.com/yuanzhangcai/config"
 )
 
 // Option Log初始化参数
@@ -42,11 +42,11 @@ var (
 
 // SendRobotTxtMsg 给钉钉机器人发送消息
 func SendRobotTxtMsg(msg string) error {
-	sURL := config.Get("robot", "server").String("")
+	sURL := config.GetString("robot", "server")
 	if sURL == "" || msg == "" {
 		return nil
 	}
-	prefix := config.Get("robot", "prefix").String("")
+	prefix := config.GetString("robot", "prefix")
 	switch common.Env {
 	case common.EnvDev:
 		prefix += "【开发】"
@@ -123,7 +123,7 @@ func (c *SendRobotTxtMsgHook) Levels() []logrus.Level {
 // GetLogOptionFormConfig 初始化log
 func GetLogOptionFormConfig() (*Option, error) {
 	opt := Option{}
-	err := config.Get("log").Scan(&opt)
+	err := config.Scan([]string{"log"}, &opt)
 	if err != nil {
 		logrus.Errorf("读取log配置失败")
 		return nil, err
