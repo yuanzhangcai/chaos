@@ -16,11 +16,12 @@ import (
 	"github.com/yuanzhangcai/chaos/controllers"
 	"github.com/yuanzhangcai/chaos/middleware"
 	"github.com/yuanzhangcai/chaos/monitor"
-	"github.com/yuanzhangcai/chaos/tools"
 	"github.com/yuanzhangcai/config"
+	"github.com/yuanzhangcai/srsd/registry"
+	"github.com/yuanzhangcai/srsd/service"
 )
 
-var register *tools.ServicesRegister
+var register *registry.Registry
 var quit chan os.Signal
 
 // CreateServer 创建路由
@@ -149,52 +150,6 @@ func initialize(c interface{}) controllers.ControllerInterface {
 // 	}
 // }
 
-// micro 问题较多，一个进程同时起启两个服务会出现数据竞态问题，使用etcd做服务发现时，也会偶现竞态问题。所以弃用。直接规换成：gin+服务注册。
-// // startMicro 启动web服务
-// func startMicro(router *gin.Engine, srv *http.Server, ctx *context.Context) {
-// 	serverName := config.Get("micro", "server_name").String("chaos.papegames.com") // 微务服名称
-// 	if common.Env != common.EnvProd {
-// 		serverName += "." + common.Env // 如果当前环境不是正式环境，服务名称添加环境后缀
-// 	}
-
-// 	var opt = []web.Option{
-// 		web.Name(serverName),    // 设置服务名称
-// 		web.HandleSignal(false), // 关闭micro信号处理功能
-// 		web.Context(*ctx),       // 设置context
-// 		web.Server(srv),         // 设置http server
-// 		web.Handler(router),     // 注册Handler事件
-// 		web.RegisterInterval(time.Duration(config.Get("micro", "register_interval").Int(15)) * time.Second), // 服务注册间隔时间
-// 		web.RegisterTTL(time.Duration(config.Get("micro", "register_ttl").Int(30)) * time.Second),           // 服务失效时间
-// 	}
-
-// 	if config.Get("common", "address").String("") != "" {
-// 		opt = append(opt, web.Address(config.Get("common", "address").String("")))
-// 	}
-
-// 	// 用etcdv3做服务注册与发现
-// 	register := etcd.NewRegistry(func(op *registry.Options) {
-// 		etcdAdds := config.Get("micro", "etcd_addrs").StringSlice([]string{})
-// 		op.Addrs = etcdAdds
-// 	})
-// 	opt = append(opt, web.Registry(register))
-
-// 	// 创建微服务
-// 	service := web.NewService(opt...)
-
-// 	// 服务初始化
-// 	err := service.Init()
-// 	if err != nil {
-// 		logrus.Fatal("服务初始化失败。")
-// 	}
-
-// 	go func() {
-// 		// Run server
-// 		if err := service.Run(); err != nil {
-// 			logrus.Fatal(err)
-// 		}
-// 	}()
-// }
-
 // StartGin 开启gin服务
 func StartGin(router *gin.Engine, srv *http.Server) {
 	serverName := config.GetString("common", "server_name") // 微务服名称
@@ -215,14 +170,14 @@ func StartGin(router *gin.Engine, srv *http.Server) {
 
 	etcdAddrs := config.GetStringArray("common", "etcd_addrs")
 	if len(etcdAddrs) > 0 { // 配有etcd地址，则开启服务注册功能
-		register = tools.NewServicesRegister(&tools.RegisterOptions{
-			ServerName:    serverName,
-			EtcdAddress:   config.GetStringArray("common", "etcd_addrs"),
-			ServerAddress: srv.Addr,
-			Interval:      time.Duration(config.GetInt("common", "register_interval")) * time.Second,
-			TTL:           time.Duration(config.GetInt("common", "register_ttl")) * time.Second,
-		})
-
+		info := service.NewService()
+		info.Name = serverName
+		info.Host = srv.Addr
+		info.Metrics = config.GetString("monitor", "server")
+		info.PProf = config.GetString("pprof", "server")
+		register = registry.NewRegistry(info,
+			registry.Addresses(config.GetStringArray("common", "etcd_addrs")),
+			registry.TTL(time.Duration(time.Duration(config.GetInt("common", "register_ttl")))*time.Second))
 		err := register.Start()
 		if err != nil {
 			fmt.Println("服务注册失败:", err)

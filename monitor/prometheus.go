@@ -10,7 +10,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
-	"github.com/yuanzhangcai/chaos/tools"
 	"github.com/yuanzhangcai/config"
 )
 
@@ -23,11 +22,9 @@ var (
 
 var (
 	// IP 当前机器IP
-	IP string
-
-	once     sync.Once
-	register *tools.ServicesRegister
-	srv      *http.Server
+	IP   string
+	once sync.Once
+	srv  *http.Server
 
 	// actVisitCount 活动访问量
 	actVisitCount *prometheus.CounterVec
@@ -119,35 +116,11 @@ func Init() {
 				logrus.Fatalf("listen: %s\n", err)
 			}
 		}()
-
-		etcdAddrs := config.GetStringArray("common", "etcd_addrs")
-		if len(etcdAddrs) > 0 {
-			serverName := config.GetString("common", "server_name") // 微务服名称
-			if common.Env != common.EnvProd {
-				serverName += "." + common.Env // 如果当前环境不是正式环境，服务名称添加环境后缀
-			}
-			serverName += ".metrics"
-
-			register = tools.NewServicesRegister(&tools.RegisterOptions{
-				ServerName:    serverName,
-				EtcdAddress:   config.GetStringArray("common", "etcd_addrs"),
-				ServerAddress: addr,
-				Interval:      time.Duration(config.GetInt("common", "register_interval")) * time.Second,
-				TTL:           time.Duration(config.GetInt("common", "register_ttl")) * time.Second,
-			})
-
-			_ = register.Start()
-		}
 	}
 }
 
 // Stop 停止监控上报
 func Stop() {
-	if register != nil {
-		_ = register.Stop()
-		register = nil
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	logrus.Info("Monitor Shutdown Server ...")

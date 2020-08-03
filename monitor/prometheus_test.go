@@ -36,7 +36,6 @@ func init() {
 
 func TestInit(t *testing.T) {
 	Init()
-	assert.NotNil(t, register)
 	assert.NotNil(t, srv)
 }
 
@@ -44,7 +43,6 @@ func TestStop(t *testing.T) {
 	Init()
 
 	Stop()
-	assert.Nil(t, register)
 }
 
 func TestMetrics(t *testing.T) {

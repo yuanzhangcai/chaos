@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	cron "github.com/robfig/cron/v3"
+	cron "github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 	"github.com/yuanzhangcai/chaos/common"
 	"github.com/yuanzhangcai/config"
@@ -225,7 +225,7 @@ func setLogFile() {
 
 	// 定时切换日志文件
 	c := cron.New()
-	_, _ = c.AddFunc(changeFileSpec, changeFile)
+	_ = c.AddFunc(changeFileSpec, changeFile)
 	c.Start()
 }
 
@@ -257,7 +257,7 @@ func clearHistoryLog() {
 	// 启动时清理一次
 	clear()
 
-	_, _ = c.AddFunc(clearHistorySpec, clear)
+	_ = c.AddFunc(clearHistorySpec, clear)
 	c.Start()
 }
 
