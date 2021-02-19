@@ -66,8 +66,8 @@ func (c *Controller) Version() {
 
 // Output 输入出json
 func (c *Controller) Output(ret *errors.Error) {
-	c.Result["ret"] = ret.Code
-	c.Result["msg"] = ret.Msg
+	c.Result["ret"] = ret.Code()
+	c.Result["msg"] = ret.Msg()
 	c.OutputJSON()
 }
 

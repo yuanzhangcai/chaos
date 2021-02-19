@@ -15,7 +15,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/sirupsen/logrus"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"gitlab.papegames.com/fringe/tds/cosmos/common"
+	"github.com/yuanzhangcai/chaos/common"
 )
 
 var (

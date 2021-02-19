@@ -60,7 +60,7 @@ sonar:
 	-Dsonar.tests=. \
 	-Dsonar.exclusions="**/*_test.go" \
 	-Dsonar.projectKey=chaos \
-	-Dsonar.login=344ad0c611674bcbbf571f17bf5271f4c678e4aa \
+	-Dsonar.login=73d40a9efae4e3f7ca54e6547933cdc4a2353b3a \
 	-Dsonar.go.tests.reportPaths=test.tmp \
 	-Dsonar.go.coverage.reportPaths=covprofile \
 	-Dsonar.go.govet.reportPaths=vet.tmp \

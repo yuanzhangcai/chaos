@@ -1,4 +1,5 @@
 *.log
 .vscode
-go.sum
 covprofile
+crypto/private.pem
+crypto/public.pem
