@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"reflect"
 	"syscall"
 	"time"
@@ -185,6 +187,29 @@ func StartGin(router *gin.Engine, srv *http.Server) {
 			close(quit) // 关闭服务
 		}
 	}
+}
+
+// StaticRouter 静态文件路由注册
+func StaticRouter(router *gin.Engine, uri, dir string) error {
+	dir = filepath.Clean(dir)
+	base := uri
+	if base == "" {
+		base = "/"
+	}
+	if base[len(base)-1] != '/' {
+		base += "/"
+	}
+
+	router.StaticFile(base, dir+"/index.html")
+	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() || info.Name() == ".DS_Store" {
+			return nil
+		}
+
+		uri = base + path[len(dir)+1:]
+		router.StaticFile(uri, path)
+		return nil
+	})
 }
 
 // StartServer 启动服务
