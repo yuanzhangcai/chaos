@@ -40,10 +40,12 @@ func init() {
 	monitor.Init()
 
 	// 初始化Redis
-	if err = tools.InitRedis(config.GetString("redis", "server"),
-		config.GetString("redis", "password"),
-		config.GetString("redis", "prefix")); err != nil {
-		logrus.Fatal(err)
+	if config.GetString("redis", "server") != "" {
+		if err = tools.InitRedis(config.GetString("redis", "server"),
+			config.GetString("redis", "password"),
+			config.GetString("redis", "prefix")); err != nil {
+			logrus.Fatal(err)
+		}
 	}
 
 	// 初始化DB

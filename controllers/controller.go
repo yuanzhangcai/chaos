@@ -54,7 +54,7 @@ func (c *Controller) Init(ctx *gin.Context) {
 	}
 	c.Params = &params
 
-	c.Ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	// c.Ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.Ctx.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET")
 }
 

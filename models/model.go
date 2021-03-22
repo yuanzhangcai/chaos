@@ -81,7 +81,8 @@ func Init() error {
 	var err error
 	list := config.GetStringArray("db", "list")
 	if len(list) == 0 {
-		return fmt.Errorf("没有获取到数据库配置")
+		// return fmt.Errorf("没有获取到数据库配置")
+		return nil
 	}
 
 	for _, one := range list {
