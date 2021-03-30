@@ -18,17 +18,13 @@ type Redis struct {
 
 var client *Redis
 
-// InitRedis 初始化redis
-func InitRedis(server, password, prefix string) error {
-	if client != nil {
-		return nil
-	}
-
+// NewRedis 创建redis对象
+func NewRedis(server, password, prefix string) (*Redis, error) {
 	if server == "" {
-		return errors.New("redis服务器地址为空。")
+		return nil, errors.New("redis服务器地址为空。")
 	}
 
-	client = &Redis{
+	cli := &Redis{
 		Client: redis.NewClient(&redis.Options{
 			Addr:     server,
 			Password: password,
@@ -36,13 +32,27 @@ func InitRedis(server, password, prefix string) error {
 		prefix: prefix,
 	}
 
-	pong, err := client.Ping().Result()
+	pong, err := cli.Ping().Result()
 	if err != nil {
 		logrus.Error(pong)
 		logrus.Error(err)
-		client = nil
+		return nil, err
+	}
+	return cli, nil
+}
+
+// InitRedis 初始化redis
+func InitRedis(server, password, prefix string) error {
+	if client != nil {
+		return nil
+	}
+
+	cli, err := NewRedis(server, password, prefix)
+	if err != nil {
 		return err
 	}
+
+	client = cli
 	return nil
 }
 
