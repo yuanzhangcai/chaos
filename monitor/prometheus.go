@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -144,5 +145,9 @@ func SummaryChaosCostTime(v float64) {
 
 // AddURICount uri访问量加1
 func AddURICount(uri string) {
+	if !utf8.ValidString(uri) {
+		uri = "Invalid uri"
+	}
+
 	uriCount.WithLabelValues(IP, uri).Inc()
 }
